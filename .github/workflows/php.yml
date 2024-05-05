@@ -1,0 +1,31 @@
+name: PHP Security Check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  php-security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, xml
+        coverage: none
+
+    - name: Install Composer Dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+
+    - name: PHPStan
+      run: vendor/bin/phpstan analyse --level=max --no-progress
+
+    - name: Composer Security Check
+      run: composer require --dev sensiolabs/security-checker && vendor/bin/security-checker security:check
